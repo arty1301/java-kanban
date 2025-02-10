@@ -1,5 +1,6 @@
 package manager;
 
+import task.Epic;
 import task.Task;
 
 import java.util.ArrayList;
@@ -16,11 +17,13 @@ public class InMemoryHistoryManager implements HistoryManager {
         Task task;
         Node prev;
         Node next;
+        List<Integer> subtaskIds;
 
         Node(Task task, Node prev, Node next) {
             this.task = task;
             this.prev = prev;
             this.next = next;
+            this.subtaskIds = new ArrayList<>();
         }
     }
 
@@ -37,6 +40,11 @@ public class InMemoryHistoryManager implements HistoryManager {
         Node node = history.get(id);
 
         if (node != null) {
+            if (node.task instanceof Epic epic) {
+                for (Integer subtaskId : epic.getSubtaskIds()) {
+                    remove(subtaskId);
+                }
+            }
             removeNode(node);
             history.remove(id);
         }
@@ -44,7 +52,13 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public List<Task> getHistory() {
-        return getTasks();
+        List<Task> tasks = new ArrayList<>();
+        Node current = head;
+        while (current != null) {
+            tasks.add(current.task);
+            current = current.next;
+        }
+        return tasks;
     }
 
     private void linkLast(Task task) {
@@ -74,16 +88,6 @@ public class InMemoryHistoryManager implements HistoryManager {
         } else {
             tail = node.prev;
         }
-    }
-
-    private List<Task> getTasks() {
-        List<Task> tasks = new ArrayList<>();
-        Node current = head;
-        while (current != null) {
-            tasks.add(current.task);
-            current = current.next;
-        }
-        return tasks;
     }
 
 
