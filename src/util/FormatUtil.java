@@ -2,35 +2,45 @@ package util;
 
 import task.*;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 public class FormatUtil {
     public static String taskToString(Task task) {
-        return String.format("%d,%s,%s,%s,%s,%s",
+        return String.format("%d,%s,%s,%s,%s,%s,%d,%s",
                 task.getId(),
                 TaskType.TASK,
                 task.getTitle(),
                 task.getStatus(),
                 task.getDescription(),
-                "");
+                "",
+                task.getDuration().toMinutes(),
+                task.getStartTime());
     }
 
+
     public static String taskToString(Epic epic) {
-        return String.format("%d,%s,%s,%s,%s,%s",
+        return String.format("%d,%s,%s,%s,%s,%s,%d,%s",
                 epic.getId(),
                 TaskType.EPIC,
                 epic.getTitle(),
                 epic.getStatus(),
                 epic.getDescription(),
-                "");
+                "",
+                epic.getDuration().toMinutes(),
+                epic.getStartTime());
     }
 
     public static String taskToString(Subtask subtask) {
-        return String.format("%d,%s,%s,%s,%s,%d",
+        return String.format("%d,%s,%s,%s,%s,%d,%d,%s",
                 subtask.getId(),
                 TaskType.SUBTASK,
                 subtask.getTitle(),
                 subtask.getStatus(),
                 subtask.getDescription(),
-                subtask.getEpicId());
+                subtask.getEpicId(),
+                subtask.getDuration().toMinutes(),
+                subtask.getStartTime());
     }
 
     public static Task taskFromString(String lineValue) {
@@ -44,6 +54,9 @@ public class FormatUtil {
             String title = element[2].trim();
             TaskStatus status = TaskStatus.valueOf(element[3].trim());
             String description = element[4].trim();
+            Duration duration = Duration.ofMinutes(Long.parseLong(element[6].trim()));
+            LocalDateTime startTime = element[7].trim().isEmpty() ? null
+                    : LocalDateTime.parse(element[7].trim());
 
             switch (type) {
                 case TASK:
@@ -52,6 +65,8 @@ public class FormatUtil {
                     task.setTitle(title);
                     task.setStatus(status);
                     task.setDescription(description);
+                    task.setDuration(duration);
+                    task.setStartTime(startTime);
                     return task;
                 case EPIC:
                     Epic epic = new Epic();
