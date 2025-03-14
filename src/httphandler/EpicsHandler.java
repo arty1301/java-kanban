@@ -1,21 +1,21 @@
-package httpHandler;
+package httphandler;
 
 import adapter.GsonCreate;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import manager.TaskManager;
-import task.Subtask;
+import task.Epic;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-public class SubtasksHandler extends BaseHttpHandler {
+public class EpicsHandler extends BaseHttpHandler {
     private final TaskManager taskManager;
     private final Gson gson;
 
-    public SubtasksHandler(TaskManager taskManager) {
+    public EpicsHandler(TaskManager taskManager) {
         this.taskManager = taskManager;
         this.gson = GsonCreate.createGson();
     }
@@ -28,15 +28,15 @@ public class SubtasksHandler extends BaseHttpHandler {
 
             switch (method) {
                 case "GET":
-                    if (path.equals("/subtasks")) {
-                        List<Subtask> subtasks = taskManager.getAllSubtasks();
-                        String response = gson.toJson(subtasks);
+                    if (path.equals("/epics")) {
+                        List<Epic> epics = taskManager.getAllEpics();
+                        String response = gson.toJson(epics);
                         sendText(exchange, response, 200);
-                    } else if (path.matches("/subtasks/\\d+")) {
+                    } else if (path.matches("/epics/\\d+")) {
                         int id = Integer.parseInt(path.split("/")[2]);
-                        Subtask subtask = taskManager.getSubtask(id);
-                        if (subtask != null) {
-                            String response = gson.toJson(subtask);
+                        Epic epic = taskManager.getEpic(id);
+                        if (epic != null) {
+                            String response = gson.toJson(epic);
                             sendText(exchange, response, 200);
                         } else {
                             sendNotFound(exchange);
@@ -46,20 +46,20 @@ public class SubtasksHandler extends BaseHttpHandler {
                 case "POST":
                     InputStream inputStream = exchange.getRequestBody();
                     String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-                    Subtask newSubtask = gson.fromJson(body, Subtask.class);
-                    if (newSubtask.getId() == 0) {
-                        taskManager.addSubtask(newSubtask);
-                        sendText(exchange, "{\"Сообщение\": \"Подзадача добавлена\"}", 201);
+                    Epic newEpic = gson.fromJson(body, Epic.class);
+                    if (newEpic.getId() == 0) {
+                        taskManager.addEpic(newEpic);
+                        sendText(exchange, "{\"Сообщение\": \"Эпик добавлен\"}", 201);
                     } else {
-                        taskManager.updateSubtask(newSubtask);
-                        sendText(exchange, "{\"Сообщение\": \"Подзадача обновлена\"}", 201);
+                        taskManager.updateEpic(newEpic);
+                        sendText(exchange, "{\"Сообщение\": \"Эпик обновлен\"}", 201);
                     }
                     break;
                 case "DELETE":
-                    if (path.matches("/subtasks/\\d+")) {
+                    if (path.matches("/epics/\\d+")) {
                         int id = Integer.parseInt(path.split("/")[2]);
-                        taskManager.removeSubtask(id);
-                        sendText(exchange, "{\"Сообщение\": \"подзадача удалена\"}", 200);
+                        taskManager.removeEpic(id);
+                        sendText(exchange, "{\"Сообщение\": \"Эпик удален\"}", 200);
                     }
                     break;
                 default:
